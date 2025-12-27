@@ -1610,29 +1610,22 @@
     </section>
 
     <script>
-// --- HERO CANVAS: ORGANIZED NEURAL NETWORK (CLEAN & INTERACTIVE) ---
+// --- HERO CANVAS: CONTROLLED NEURAL NETWORK (SPOTLIGHT EFFECT) ---
 (function () {
     const canvas = document.getElementById('heroCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let width, height;
 
-    // --- CONFIGURATION ---
-    const particleCount = 100; // Balanced density
+    // --- KONFIGURATION ---
+    const particleCount = 110; // Genug Punkte für Struktur
     
-    // Connection Logic
-    const baseConnectDist = 110;    // Standard connection range
-    const activeConnectDist = 160;  // Slightly increased range on hover (not too much!)
-    const mouseRadius = 250;        // Area of influence
+    // Distanzen
+    const connectDist = 100;      // Punkte müssen SEHR nah sein, um sich zu verbinden
+    const mouseRadius = 250;      // Radius der "Taschenlampe"
 
     const mouse = { x: -9999, y: -9999 };
-
     const particles = [];
-
-    // Colors
-    const colBase = 'rgba(255, 255, 255, 0.4)';  // Faint white for background
-    const colActive = 'rgba(255, 193, 7, 1)';    // Bright Yellow for interaction
-    const colBridge = '255, 220, 150';           // Pale Yellow for bridging lines
 
     function resize() {
         width = canvas.width = window.innerWidth;
@@ -1660,70 +1653,47 @@
             this.x = Math.random() * width;
             this.y = randomY ? Math.random() * height : height + 20;
             
-            // Stable, slow upward drift
+            // Langsame, stabile Bewegung nach oben
             this.vx = (Math.random() - 0.5) * 0.5; 
-            this.vy = -(0.3 + Math.random() * 0.5); 
+            this.vy = -(0.2 + Math.random() * 0.4); 
 
-            // Base radius
             this.r = 1.5 + Math.random() * 1.5;
-            
-            // To store original velocity for smooth return after mouse interaction
-            this.ox = this.x;
-            this.oy = this.y;
         }
 
         update() {
-            // 1. Move normally
+            // Keine Reaktion auf Maus-Position (Kein Fliehen)
             this.x += this.vx;
             this.y += this.vy;
 
-            // 2. Mouse Interaction (Gentle Repulsion)
-            // This pushes dots slightly away to clear the chaos around the cursor
-            const dx = mouse.x - this.x;
-            const dy = mouse.y - this.y;
-            const distance = Math.sqrt(dx*dx + dy*dy);
-
-            if (distance < mouseRadius) {
-                const forceDirectionX = dx / distance;
-                const forceDirectionY = dy / distance;
-                const force = (mouseRadius - distance) / mouseRadius;
-                
-                // Push away gently
-                const direction = -1; 
-                const strength = 2; 
-                
-                this.x += forceDirectionX * force * strength * direction;
-                this.y += forceDirectionY * force * strength * direction;
-            }
-
-            // 3. Reset Bounds
+            // Reset
             if (this.y < -50 || this.x < -50 || this.x > width + 50) {
                 this.init(false);
             }
         }
 
-        draw(isActive) {
+        draw(distToMouse) {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
             
-            if (isActive) {
-                ctx.fillStyle = colActive;
-                // Add glow only to active dots
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = colActive;
+            // Logik: Je näher an der Maus, desto gelber/heller
+            if (distToMouse < mouseRadius) {
+                const alpha = 1 - (distToMouse / mouseRadius);
+                ctx.fillStyle = `rgba(255, 193, 7, ${0.5 + alpha * 0.5})`; // Wird Gelb
+                ctx.shadowBlur = 15 * alpha;
+                ctx.shadowColor = 'rgba(255, 193, 7, 0.8)';
             } else {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; // Dunkles Weiß
                 ctx.shadowBlur = 0;
             }
             
             ctx.fill();
-            ctx.shadowBlur = 0; // Reset
+            ctx.shadowBlur = 0; 
         }
     }
 
     function initParticles() {
         particles.length = 0;
-        const count = width < 768 ? 50 : particleCount;
+        const count = width < 768 ? 60 : particleCount;
         for (let i = 0; i < count; i++) {
             particles.push(new Particle());
         }
@@ -1732,16 +1702,16 @@
     function animate() {
         ctx.clearRect(0, 0, width, height);
 
-        // 1. Update & Check State
+        // 1. Status berechnen
         const pStates = particles.map(p => {
             p.update();
             const dx = mouse.x - p.x;
             const dy = mouse.y - p.y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            return { p, isActive: dist < mouseRadius };
+            const distToMouse = Math.sqrt(dx*dx + dy*dy);
+            return { p, distToMouse };
         });
 
-        // 2. Draw Lines
+        // 2. Linien zeichnen
         for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
                 const s1 = pStates[i];
@@ -1751,47 +1721,50 @@
 
                 const dx = p1.x - p2.x;
                 const dy = p1.y - p2.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
+                const distPoints = Math.sqrt(dx * dx + dy * dy);
 
-                // Determining Reach:
-                // If active, we extend reach slightly (160), else standard (110)
-                const reach = (s1.isActive || s2.isActive) ? activeConnectDist : baseConnectDist;
-
-                if (dist < reach) {
-                    ctx.beginPath();
+                // STRENGE REGEL: Nur verbinden, wenn Punkte sehr nah sind
+                if (distPoints < connectDist) {
                     
-                    // Alpha Logic: Fade out quickly as they get further apart
-                    // This is key to reducing chaos.
-                    let alpha = 1 - (dist / reach);
-                    // Sharpen the falloff (power of 2) so distant lines are very faint
-                    alpha = alpha * alpha; 
+                    // Sind beide Punkte im Maus-Lichtkegel?
+                    const inMouseRange = (s1.distToMouse < mouseRadius) || (s2.distToMouse < mouseRadius);
 
-                    if (s1.isActive && s2.isActive) {
-                        // Both Active: Bright Yellow Line
-                        ctx.strokeStyle = `rgba(255, 193, 7, ${alpha})`;
-                        ctx.lineWidth = 1.5;
-                    } 
-                    else if (s1.isActive || s2.isActive) {
-                        // One Active (Bridging): Pale Yellow
-                        // We reduce alpha slightly to keep it subtle
-                        ctx.strokeStyle = `rgba(${colBridge}, ${alpha * 0.8})`;
+                    if (inMouseRange) {
+                        ctx.beginPath();
+                        
+                        // Helligkeit der Linie hängt davon ab, wie nah die MAUS ist
+                        // Wir nehmen den Punkt, der näher an der Maus ist, als Referenz
+                        const closestToMouse = Math.min(s1.distToMouse, s2.distToMouse);
+                        let mouseIntensity = 1 - (closestToMouse / mouseRadius);
+                        if (mouseIntensity < 0) mouseIntensity = 0;
+
+                        // Verbindung: Gelb, Stärke basierend auf Mausnähe
+                        ctx.strokeStyle = `rgba(255, 193, 7, ${mouseIntensity * 0.8})`;
                         ctx.lineWidth = 1;
+                        
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
                     } 
                     else {
-                        // Inactive: Very faint white
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.3})`;
-                        ctx.lineWidth = 0.5;
+                        // Im Hintergrund: SEHR schwache weiße Linien (kaum sichtbar)
+                        // Das gibt Struktur, ohne abzulenken
+                        const alpha = 0.05 * (1 - distPoints/connectDist);
+                        if (alpha > 0.01) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
                     }
-
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.stroke();
                 }
             }
         }
 
-        // 3. Draw Particles (on top of lines)
-        pStates.forEach(s => s.p.draw(s.isActive));
+        // 3. Punkte zeichnen
+        pStates.forEach(s => s.p.draw(s.distToMouse));
 
         requestAnimationFrame(animate);
     }
