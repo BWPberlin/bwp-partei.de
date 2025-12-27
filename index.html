@@ -1610,102 +1610,182 @@
     </section>
 
     <script>
-// --- HERO CANVAS: GEOMETRIC FLOW (HEXAGON STRUCTURE) ---
+// --- HERO CANVAS: INTERACTIVE NEURAL NETWORK (HIGH DENSITY) ---
 (function () {
     const canvas = document.getElementById('heroCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let width, height;
 
-    // Configuration
-    const hexRadius = 40;     // Size of hexagons
-    const hexGap = 2;         // Gap between them
-    const waveSpeed = 0.02;   // Speed of the pulse
-    let time = 0;
+    // --- CONFIGURATION ---
+    // Higher count for denser groups
+    const particleCount = width < 768 ? 60 : 130; 
+    
+    // Distances
+    const standardConnectDist = 110; // Standard reach
+    const mouseInteractionDist = 250; // How far the mouse affects points
+    const boostConnectDist = 220;    // Activated points reach further to connect groups
 
-    // Derived values
-    // Horizontal distance between centers = 1.5 * radius (for pointy top hexes) or sqrt(3) * radius (for flat top)
-    // We will use Flat Top Hexagons for a "Tech" look
-    // Width = 2 * radius
-    // Height = sqrt(3) * radius
-    // Horiz spacing = 3/2 * radius
-    // Vert spacing = sqrt(3) * radius
-    const hexW = hexRadius * 2;
-    const hexH = Math.sqrt(3) * hexRadius;
-    const distX = hexRadius * 1.5;
-    const distY = hexH;
+    // Mouse State
+    const mouse = { x: -9999, y: -9999 }; // Start off-screen
 
+    const particles = [];
+
+    // Resize Logic
     function resize() {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
+        initParticles();
     }
 
-    function drawHexagon(x, y, r, opacity, isYellow) {
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i; // 60 degrees
-            const xPos = x + r * Math.cos(angle);
-            const yPos = y + r * Math.sin(angle);
-            if (i === 0) ctx.moveTo(xPos, yPos);
-            else ctx.lineTo(xPos, yPos);
-        }
-        ctx.closePath();
+    // Interaction Listeners
+    window.addEventListener('mousemove', e => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+    });
+    
+    window.addEventListener('mouseleave', () => {
+        mouse.x = -9999;
+        mouse.y = -9999;
+    });
 
-        // Style
-        if (isYellow) {
-            // Active "Building" blocks
-            ctx.strokeStyle = `rgba(255, 193, 7, ${opacity})`;
-            ctx.fillStyle = `rgba(255, 193, 7, ${opacity * 0.2})`;
-            ctx.lineWidth = 2;
+    class Particle {
+        constructor() {
+            this.init(true);
+        }
+
+        init(randomY = false) {
+            this.x = Math.random() * width;
+            this.y = randomY ? Math.random() * height : height + 20;
+
+            // Velocities (Slow drift)
+            this.vx = (Math.random() - 0.5) * 0.4; 
+            this.vy = -(0.1 + Math.random() * 0.4); // Always drifting up slightly
+
+            this.size = 1.5 + Math.random() * 1.5;
+            this.baseColor = 'rgba(255, 255, 255, 0.6)'; // Standard White
+            this.activeColor = 'rgba(255, 193, 7, 1)';   // Active Yellow
+        }
+
+        update() {
+            // Move
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // Reset bounds
+            if (this.y < -50 || this.x < -50 || this.x > width + 50) {
+                this.init(false); // Respawn at bottom
+            }
+        }
+
+        draw(isActive) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            
+            if (isActive) {
+                ctx.fillStyle = this.activeColor;
+                // Add a glow effect for active particles
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.activeColor;
+            } else {
+                ctx.fillStyle = this.baseColor;
+                ctx.shadowBlur = 0;
+            }
+            
             ctx.fill();
-            ctx.stroke();
-        } else {
-            // Background Grid structure
-            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.15})`; // Very subtle white
-            ctx.lineWidth = 1;
-            ctx.stroke();
+            // Reset shadow for next operations
+            ctx.shadowBlur = 0; 
+        }
+    }
+
+    function initParticles() {
+        particles.length = 0;
+        // Check screen size again for resize events
+        const count = window.innerWidth < 768 ? 60 : 130;
+        for (let i = 0; i < count; i++) {
+            particles.push(new Particle());
         }
     }
 
     function animate() {
         ctx.clearRect(0, 0, width, height);
-        time += waveSpeed;
 
-        // Calculate rows and cols to cover screen
-        const cols = Math.ceil(width / distX) + 2;
-        const rows = Math.ceil(height / distY) + 2;
+        // 1. Update particles and determine their state (Active/Inactive)
+        // We map this to avoid recalculating distance multiple times
+        const pStates = particles.map(p => {
+            p.update();
+            
+            // Distance to mouse
+            const dx = mouse.x - p.x;
+            const dy = mouse.y - p.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            // It is active if within mouse radius
+            const isActive = dist < mouseInteractionDist;
+            return { p, isActive };
+        });
 
-        for (let col = 0; col < cols; col++) {
-            for (let row = 0; row < rows; row++) {
-                // Hexagon Center Position
-                let x = col * distX;
-                let y = row * distY;
-
-                // Offset every other column
-                if (col % 2 === 1) {
-                    y += distY / 2;
-                }
-
-                // Create a "Wave" value based on position and time
-                // Diagonal wave (x + y)
-                // We use Math.sin to create a breathing effect
-                const waveVal = Math.sin(x * 0.002 + y * 0.002 - time);
+        // 2. Draw Connections
+        // Nested loop: Compare every particle with every other
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const s1 = pStates[i];
+                const s2 = pStates[j];
                 
-                // Map wave (-1 to 1) to opacity (0.1 to 1)
-                // We want mostly subtle, with bands of brightness
-                let opacity = (waveVal + 1) / 2; 
+                const p1 = s1.p;
+                const p2 = s2.p;
 
-                // Logic for Highlights (Yellow)
-                // We use a pseudo-random function based on x,y and time to make specific hexes "light up"
-                // This simulates "Data" or "Power" moving through the grid
-                const highlightThreshold = Math.sin(x * 0.01 + y * 0.03 + time * 1.5);
-                const isYellow = highlightThreshold > 0.96; // Only top 4% are yellow
+                const dx = p1.x - p2.x;
+                const dy = p1.y - p2.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
 
-                // Draw
-                // We subtract radius slightly to create the gap
-                drawHexagon(x, y, hexRadius - hexGap, opacity, isYellow);
+                // LOGIC:
+                // If either particle is "Active" (near mouse), they get a longer reach.
+                // This creates the effect of pulling distant groups together.
+                const reach = (s1.isActive || s2.isActive) ? boostConnectDist : standardConnectDist;
+
+                if (distance < reach) {
+                    ctx.beginPath();
+                    
+                    // Determine Line Style
+                    // If BOTH are active: Bright Yellow Line
+                    // If ONE is active: Fade from Yellow to White (Bridging the group)
+                    // If NEITHER: Subtle White
+                    
+                    if (s1.isActive && s2.isActive) {
+                        const alpha = 1 - (distance / reach);
+                        ctx.strokeStyle = `rgba(255, 193, 7, ${alpha})`;
+                        ctx.lineWidth = 1.5;
+                    } 
+                    else if (s1.isActive || s2.isActive) {
+                        // The "Bridging" connection
+                        const alpha = 0.6 - (distance / reach) * 0.6;
+                        ctx.strokeStyle = `rgba(255, 220, 150, ${alpha})`; // Pale yellow
+                        ctx.lineWidth = 1;
+                    } 
+                    else {
+                        // Standard dormant connection
+                        const alpha = 0.3 - (distance / reach) * 0.3;
+                        if (alpha > 0) {
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                            ctx.lineWidth = 0.5;
+                        } else {
+                            continue; // Skip drawing if invisible
+                        }
+                    }
+                    
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
             }
         }
+
+        // 3. Draw Dots on top of lines
+        pStates.forEach(state => {
+            state.p.draw(state.isActive);
+        });
 
         requestAnimationFrame(animate);
     }
