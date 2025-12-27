@@ -1611,151 +1611,166 @@
 
     <script>
         // --- HERO CANVAS: HARMONIC TURNING POINT (SANFTE WENDE) ---
-        (function () {
-            const canvas = document.getElementById('heroCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let width, height;
+// --- HERO CANVAS: HARMONIC ARROWS (ZIG ZAG) ---
+(function () {
+    const canvas = document.getElementById('heroCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let width, height;
 
-            // Konfiguration
-            const particleCount = 100; // Genug für Fülle, wenig genug für Ruhe
-            const particles = [];
+    // Configuration
+    const arrowCount = 35; // Number of arrows
+    const arrows = [];
+    
+    // Colors
+    const colors = [
+        'rgba(255, 255, 255, 0.3)', // Subtle White
+        'rgba(255, 255, 255, 0.6)', // Bright White
+        'rgba(255, 193, 7, 0.8)',   // Accent Yellow (Hero)
+        'rgba(255, 193, 7, 0.4)'    // Subtle Yellow
+    ];
 
-            // Farben
-            const colorBluePale = 'rgba(200, 220, 255, 0.3)'; // Blasses Blau/Weiß für den Fall
-            const colorYellow = 'rgba(255, 193, 7, 0.8)';     // Leuchtendes Gelb für den Aufstieg
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initArrows();
+    }
 
-            function resize() {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
-                initParticles();
+    class Arrow {
+        constructor() {
+            this.init(true);
+        }
+
+        init(randomStart = false) {
+            // General direction: Bottom-Left to Top-Right
+            // We define a "virtual track" angle roughly -45 degrees
+            this.trackAngle = -Math.PI / 4; 
+
+            // Speed
+            this.speed = 1 + Math.random() * 2; 
+
+            // Zig Zag Properties (Sine Wave)
+            this.amplitude = 20 + Math.random() * 60; // How wide the zig zag is
+            this.frequency = 0.005 + Math.random() * 0.01; // How often it turns
+            this.phase = Math.random() * Math.PI * 2; // Start point of wave
+
+            // Dimensions
+            this.length = 40 + Math.random() * 60; // Length of the arrow shaft
+            this.headSize = 8 + Math.random() * 5; 
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Distance traveled along the track
+            // If randomStart is true (on load), spawn them all over the screen.
+            // If false (respawn), spawn them below/left of screen.
+            const diagonal = Math.sqrt(width*width + height*height);
+            this.distance = randomStart ? Math.random() * diagonal : -150;
+            
+            // Offset to cover the whole width of the band
+            // We shift the start position perpendicular to the movement direction
+            this.offsetY = (Math.random() - 0.5) * (width + height); 
+        }
+
+        update() {
+            this.distance += this.speed;
+
+            // Calculate current position based on Sine Wave logic rotated 45 degrees
+            // 1. Calculate Base Position (Straight line)
+            // We start roughly at bottom-left (0, height)
+            const baseX = Math.cos(this.trackAngle) * this.distance;
+            const baseY = height + Math.sin(this.trackAngle) * this.distance;
+
+            // 2. Add Perpendicular Offset (The "Band" width)
+            // Rotated 90 degrees from track
+            const perpX = Math.cos(this.trackAngle + Math.PI/2) * this.offsetY;
+            const perpY = Math.sin(this.trackAngle + Math.PI/2) * this.offsetY;
+
+            // 3. Add Wave Offset (The Zig Zag)
+            const waveVal = Math.sin(this.distance * this.frequency + this.phase) * this.amplitude;
+            const waveX = Math.cos(this.trackAngle + Math.PI/2) * waveVal;
+            const waveY = Math.sin(this.trackAngle + Math.PI/2) * waveVal;
+
+            // Combine
+            this.x = baseX + perpX + waveX;
+            this.y = baseY + perpY + waveY;
+
+            // Determine Rotation for the Arrow Head (Derivative)
+            // Look slightly ahead to see where we are going
+            const nextDist = this.distance + 5;
+            const nextWaveVal = Math.sin(nextDist * this.frequency + this.phase) * this.amplitude;
+            
+            const nextBaseX = Math.cos(this.trackAngle) * nextDist;
+            const nextBaseY = height + Math.sin(this.trackAngle) * nextDist;
+            
+            const nextWaveX = Math.cos(this.trackAngle + Math.PI/2) * nextWaveVal;
+            const nextWaveY = Math.sin(this.trackAngle + Math.PI/2) * nextWaveVal;
+
+            const nextX = nextBaseX + perpX + nextWaveX;
+            const nextY = nextBaseY + perpY + nextWaveY;
+
+            this.rotation = Math.atan2(nextY - this.y, nextX - this.x);
+
+            // Reset if out of bounds (Top Right)
+            // Give it some buffer so it disappears fully
+            if (this.y < -150 || this.x > width + 150) {
+                this.init(false);
             }
+        }
 
-            class Particle {
-                constructor() {
-                    this.init();
-                }
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.rotation);
 
-                init() {
-                    // Startposition: Zufällig oben
-                    this.x = Math.random() * width;
-                    this.y = Math.random() * -height; // Startet oberhalb des Screens
+            ctx.strokeStyle = this.color;
+            ctx.fillStyle = this.color;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
 
-                    // Anfangsgeschwindigkeit (sanft fallend)
-                    this.vx = 0;
-                    this.vy = 1.5 + Math.random(); // Langsames Fallen
+            // Draw Shaft
+            ctx.beginPath();
+            ctx.moveTo(-this.length, 0);
+            ctx.lineTo(0, 0);
+            ctx.stroke();
 
-                    this.history = []; // Für den Schweif (Linie)
-                    this.historyMax = 20; // Länge des Schweifs (macht es weich)
+            // Draw Arrow Head
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-this.headSize, -this.headSize / 2); // Top wing
+            ctx.lineTo(-this.headSize, this.headSize / 2);  // Bottom wing
+            ctx.closePath();
+            ctx.fill();
 
-                    this.state = 'falling'; // Zustand
-                    this.turnPoint = height * 0.85 + (Math.random() * 50); // Wo wendet es?
-                    this.curveStrength = 0.05 + Math.random() * 0.05; // Wie eng ist die Kurve?
-                }
+            ctx.restore();
+        }
+    }
 
-                update() {
-                    // Position speichern
-                    this.history.push({ x: this.x, y: this.y });
-                    if (this.history.length > this.historyMax) {
-                        this.history.shift();
-                    }
+    function initArrows() {
+        arrows.length = 0;
+        for (let i = 0; i < arrowCount; i++) {
+            arrows.push(new Arrow());
+        }
+    }
 
-                    // Logik
-                    if (this.state === 'falling') {
-                        // Phase 1: Fallen
-                        this.y += this.vy;
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
 
-                        // Wenn wir den Boden erreichen -> Wende einleiten
-                        if (this.y > this.turnPoint) {
-                            this.state = 'turning';
-                        }
-                    }
-                    else if (this.state === 'turning') {
-                        // Phase 2: Die harmonische Kurve
-                        // Wir verringern die Fallgeschwindigkeit (vy) und erhöhen die Seitwärtsbewegung (vx)
-                        this.vy -= this.curveStrength;
-                        this.vx += this.curveStrength; // Kurve nach rechts
+        // Optional: Draw a very faint gradient overlay to make arrows pop
+        // ctx.fillStyle = 'rgba(0, 45, 90, 0.05)';
+        // ctx.fillRect(0,0, width, height);
 
-                        this.x += this.vx;
-                        this.y += this.vy;
+        arrows.forEach(arrow => {
+            arrow.update();
+            arrow.draw();
+        });
 
-                        // Wenn vy negativ wird, steigen wir auf
-                        if (this.vy < -2) {
-                            this.state = 'rising';
-                        }
-                    }
-                    else if (this.state === 'rising') {
-                        // Phase 3: Aufstieg
-                        // Beschleunigung nach oben
-                        this.vy -= 0.05;
+        requestAnimationFrame(animate);
+    }
 
-                        this.x += this.vx;
-                        this.y += this.vy;
-                    }
-
-                    // Reset wenn aus dem Bild (oben oder rechts)
-                    if (this.y < -100 || this.x > width + 100) {
-                        this.init();
-                    }
-                }
-
-                draw() {
-                    if (this.history.length < 2) return;
-
-                    ctx.beginPath();
-                    ctx.moveTo(this.history[0].x, this.history[0].y);
-
-                    // Zeichne die Kurve durch die History-Punkte
-                    for (let i = 1; i < this.history.length; i++) {
-                        ctx.lineTo(this.history[i].x, this.history[i].y);
-                    }
-
-                    // Farbe basierend auf Zustand (Weicher Übergang)
-                    if (this.state === 'falling') {
-                        ctx.strokeStyle = colorBluePale;
-                        ctx.lineWidth = 1;
-                    } else {
-                        // Beim Wenden und Aufsteigen wird es Gelb und etwas dicker
-                        ctx.strokeStyle = colorYellow;
-                        ctx.lineWidth = 2;
-                    }
-
-                    // Strich abrunden für Harmonie
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    ctx.stroke();
-                }
-            }
-
-            function initParticles() {
-                particles.length = 0;
-                let count = width < 768 ? 50 : particleCount;
-                for (let i = 0; i < count; i++) {
-                    particles.push(new Particle());
-                }
-            }
-
-            function animate() {
-                ctx.clearRect(0, 0, width, height);
-
-                // Schleier-Effekt (optional): Lösche nicht komplett, sondern übermale transparent
-                // Das macht die Bewegung noch fließender. Wenn zu verschwommen, Zeile löschen.
-                // ctx.fillStyle = 'rgba(0, 45, 90, 0.1)';
-                // ctx.fillRect(0, 0, width, height);
-
-                particles.forEach(p => {
-                    p.update();
-                    p.draw();
-                });
-
-                requestAnimationFrame(animate);
-            }
-
-            window.addEventListener('resize', resize);
-            resize();
-            animate();
-        })();
-
+    window.addEventListener('resize', resize);
+    resize();
+    animate();
+})();
         // --- SCROLL & NAV LOGIC ---
         // Scroll Animation
         window.addEventListener('scroll', function () {
