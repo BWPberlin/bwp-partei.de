@@ -1610,7 +1610,7 @@
     </section>
 
     <script>
-// --- HERO CANVAS: CONTROLLED NEURAL NETWORK (SPOTLIGHT EFFECT) ---
+// --- HERO CANVAS: DYNAMIC BRIDGE NETWORK (NEW LINES ON HOVER) ---
 (function () {
     const canvas = document.getElementById('heroCanvas');
     if (!canvas) return;
@@ -1618,11 +1618,12 @@
     let width, height;
 
     // --- KONFIGURATION ---
-    const particleCount = 110; // Genug Punkte für Struktur
+    const particleCount = 110; 
     
     // Distanzen
-    const connectDist = 100;      // Punkte müssen SEHR nah sein, um sich zu verbinden
-    const mouseRadius = 250;      // Radius der "Taschenlampe"
+    const baseReach = 100;        // Normale Reichweite (ohne Maus)
+    const extraReach = 80;        // Zusätzliche Reichweite durch die Maus (Neue Linien!)
+    const mouseRadius = 250;      // Einflussbereich der Maus
 
     const mouse = { x: -9999, y: -9999 };
     const particles = [];
@@ -1653,7 +1654,7 @@
             this.x = Math.random() * width;
             this.y = randomY ? Math.random() * height : height + 20;
             
-            // Langsame, stabile Bewegung nach oben
+            // Ruhige Bewegung nach oben
             this.vx = (Math.random() - 0.5) * 0.5; 
             this.vy = -(0.2 + Math.random() * 0.4); 
 
@@ -1661,11 +1662,9 @@
         }
 
         update() {
-            // Keine Reaktion auf Maus-Position (Kein Fliehen)
             this.x += this.vx;
             this.y += this.vy;
 
-            // Reset
             if (this.y < -50 || this.x < -50 || this.x > width + 50) {
                 this.init(false);
             }
@@ -1675,14 +1674,14 @@
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
             
-            // Logik: Je näher an der Maus, desto gelber/heller
+            // Punkt leuchtet auf bei Mausnähe
             if (distToMouse < mouseRadius) {
                 const alpha = 1 - (distToMouse / mouseRadius);
-                ctx.fillStyle = `rgba(255, 193, 7, ${0.5 + alpha * 0.5})`; // Wird Gelb
-                ctx.shadowBlur = 15 * alpha;
+                ctx.fillStyle = `rgba(255, 193, 7, ${0.5 + alpha * 0.5})`; 
+                ctx.shadowBlur = 10 * alpha;
                 ctx.shadowColor = 'rgba(255, 193, 7, 0.8)';
             } else {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; // Dunkles Weiß
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                 ctx.shadowBlur = 0;
             }
             
@@ -1702,16 +1701,17 @@
     function animate() {
         ctx.clearRect(0, 0, width, height);
 
-        // 1. Status berechnen
+        // 1. Update
         const pStates = particles.map(p => {
             p.update();
             const dx = mouse.x - p.x;
             const dy = mouse.y - p.y;
+            // Distanz zur Maus speichern
             const distToMouse = Math.sqrt(dx*dx + dy*dy);
             return { p, distToMouse };
         });
 
-        // 2. Linien zeichnen
+        // 2. Verbindungen zeichnen
         for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
                 const s1 = pStates[i];
@@ -1723,42 +1723,50 @@
                 const dy = p1.y - p2.y;
                 const distPoints = Math.sqrt(dx * dx + dy * dy);
 
-                // STRENGE REGEL: Nur verbinden, wenn Punkte sehr nah sind
-                if (distPoints < connectDist) {
+                // --- HIER PASSIERT DIE MAGIE ---
+                
+                // Wir berechnen die erlaubte Reichweite dynamisch.
+                // Standard ist baseReach. 
+                // Wenn Maus nah ist, addieren wir extraReach dazu.
+                
+                let currentReach = baseReach;
+                
+                // Wie nah ist der nähste der beiden Punkte zur Maus?
+                const closestToMouse = Math.min(s1.distToMouse, s2.distToMouse);
+                
+                // Wenn wir im Mausradius sind, erhöhen wir die Reichweite
+                let mouseFactor = 0;
+                if (closestToMouse < mouseRadius) {
+                    mouseFactor = 1 - (closestToMouse / mouseRadius);
+                    // Je näher die Maus, desto größer die Reichweite -> Neue Linien entstehen!
+                    currentReach += (extraReach * mouseFactor); 
+                }
+
+                // Verbindung prüfen mit der NEUEN, dynamischen Reichweite
+                if (distPoints < currentReach) {
+                    ctx.beginPath();
                     
-                    // Sind beide Punkte im Maus-Lichtkegel?
-                    const inMouseRange = (s1.distToMouse < mouseRadius) || (s2.distToMouse < mouseRadius);
-
-                    if (inMouseRange) {
-                        ctx.beginPath();
+                    if (mouseFactor > 0) {
+                        // Aktive Verbindung (Gelb)
+                        // Transparenz basiert darauf, wie nah die Punkte am Limit der Reichweite sind
+                        const alpha = (1 - (distPoints / currentReach)) * mouseFactor;
                         
-                        // Helligkeit der Linie hängt davon ab, wie nah die MAUS ist
-                        // Wir nehmen den Punkt, der näher an der Maus ist, als Referenz
-                        const closestToMouse = Math.min(s1.distToMouse, s2.distToMouse);
-                        let mouseIntensity = 1 - (closestToMouse / mouseRadius);
-                        if (mouseIntensity < 0) mouseIntensity = 0;
-
-                        // Verbindung: Gelb, Stärke basierend auf Mausnähe
-                        ctx.strokeStyle = `rgba(255, 193, 7, ${mouseIntensity * 0.8})`;
-                        ctx.lineWidth = 1;
-                        
-                        ctx.moveTo(p1.x, p1.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
-                    } 
-                    else {
-                        // Im Hintergrund: SEHR schwache weiße Linien (kaum sichtbar)
-                        // Das gibt Struktur, ohne abzulenken
-                        const alpha = 0.05 * (1 - distPoints/connectDist);
-                        if (alpha > 0.01) {
-                            ctx.beginPath();
+                        ctx.strokeStyle = `rgba(255, 193, 7, ${alpha})`;
+                        ctx.lineWidth = 1; // Etwas dicker
+                    } else {
+                        // Passive Verbindung (Weiß, sehr schwach)
+                        const alpha = (1 - (distPoints / baseReach)) * 0.1; 
+                        if (alpha > 0) {
                             ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
                             ctx.lineWidth = 0.5;
-                            ctx.moveTo(p1.x, p1.y);
-                            ctx.lineTo(p2.x, p2.y);
-                            ctx.stroke();
+                        } else {
+                            continue;
                         }
                     }
+                    
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
                 }
             }
         }
