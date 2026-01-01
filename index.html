@@ -1093,9 +1093,49 @@
         }
 
         .disclaimer-icon {
-            font-size: 3.5rem;
+            /* Größe der Box */
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 25px auto; /* Zentriert + Abstand nach unten */
+            
+            /* Visueller Stil (wie Programm/Ideologie) */
+            background-color: #eef4fb;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            
+            /* Icon Zentrierung */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            /* Icon Farbe & Größe */
             color: var(--primary-blue);
-            margin-bottom: 25px;
+            font-size: 3.5rem;
+            
+            /* Animation Base */
+            transition: all 0.3s ease;
+            cursor: pointer; /* Zeigt Interaktivität an */
+            position: relative;
+            overflow: hidden;
+        }
+
+        .disclaimer-icon i {
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        /* --- HOVER EFFEKT (Gleiche Animation wie im Programm-Teil) --- */
+        .disclaimer-icon:hover {
+            background-color: var(--primary-blue);
+            box-shadow: 0 15px 30px rgba(0, 45, 90, 0.2);
+            transform: translateY(-5px); /* Leichtes Anheben */
+            border-color: transparent;
+        }
+
+        .disclaimer-icon:hover i {
+            color: var(--accent-yellow);
+            transform: scale(1.1); /* Leichtes Vergrößern des Icons */
         }
 
         .disclaimer-box h2 {
