@@ -23,6 +23,8 @@
             --light-bg: #f4f7f9;
             --text-dark: #1a1a1a;
             --transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            --section-padding: 100px 5%; /* Standardabstand Desktop */
+            --container-width: 1200px;   /* Einheitliche Breite */
         }
 
         * {
@@ -49,7 +51,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 5%;
+            padding: 0 5%; /* Gleicher Seitenabstand wie Sektionen */
             height: 80px;
             z-index: 1000;
             box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
@@ -279,7 +281,13 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
-        /* --- SECTIONS --- */
+        /* --- SECTIONS GLOBAL --- */
+        /* Hier setzen wir die synchronisierten Abstände */
+        section {
+            padding: var(--section-padding);
+            position: relative;
+        }
+
         #programm {
             background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%);
         }
@@ -318,7 +326,7 @@
         /* --- SPEZIFISCHES CSS FÜR DIE PROGRAMM-DETAILSEITE --- */
 
         .program-detail-container {
-            max-width: 1200px;
+            max-width: var(--container-width); /* Synchronisiert */
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -337,10 +345,8 @@
             border: 1px solid rgba(0, 0, 0, 0.03);
             transition: all 0.4s ease;
             cursor: default;
-            /* Zeigt an, dass es ein Info-Element ist */
         }
 
-        /* HOVER EFFEKT: Box hebt sich, Schatten wird stärker */
         .program-row:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(0, 45, 90, 0.15);
@@ -404,24 +410,19 @@
         }
 
         /* ICON BEREICH */
-        /* ICON BEREICH (Angepasst an Ideologie-Style) */
         .program-visual {
             flex: 0 0 300px;
             height: 300px;
-            /* Helles Blau (wie Ideologie-Basis) */
             background-color: #eef4fb;
-            /* Kein Gradient mehr */
             background-image: none;
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Icon Farbe Dunkelblau */
             color: var(--primary-blue);
             font-size: 5rem;
             position: relative;
             overflow: hidden;
-            /* Sanfter Übergang für Hintergrund und Farbe */
             transition: all 0.3s ease;
             border: 1px solid rgba(0, 0, 0, 0.03);
         }
@@ -432,7 +433,6 @@
             transition: all 0.3s ease;
         }
 
-        /* HOVER EFFEKT: Hintergrund wird Dunkelblau, Icon Gelb */
         .program-row:hover .program-visual {
             background-color: var(--primary-blue);
             box-shadow: 0 15px 30px rgba(0, 45, 90, 0.2);
@@ -440,11 +440,9 @@
 
         .program-row:hover .program-visual i {
             color: var(--accent-yellow);
-            /* Leichte Vergrößerung für Feedback */
             transform: scale(1.1);
         }
 
-        /* Hintergrund-Deko entfernen für sauberen Look */
         .program-visual::after {
             display: none;
         }
@@ -468,21 +466,18 @@
         /* --- ÜBER UNS SEKTION (RE-DESIGN) --- */
         #ueber-uns {
             background: #f4f7f9;
-            padding: 100px 5%;
-            position: relative;
+            /* Padding wird jetzt durch globale Regel gesetzt */
         }
 
         .about-container {
-            max-width: 1300px;
+            max-width: var(--container-width); /* Synchronisiert */
             margin: 0 auto;
             display: grid;
             grid-template-columns: 1fr 0.8fr;
-            /* Mehr Platz für Text */
             gap: 60px;
             align-items: start;
         }
 
-        /* Linke Seite: Text & Grid */
         .about-text-column {
             display: flex;
             flex-direction: column;
@@ -503,14 +498,12 @@
             text-align: left;
             transition: all 0.3s ease;
             border: 1px solid rgba(0, 0, 0, 0.03);
-            /* WICHTIG: border-bottom Zeile wurde entfernt */
             height: 100%;
         }
 
         .ideology-box:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(0, 45, 90, 0.15);
-            /* Jetzt wird der Rahmen gelb, genau wie bei den Programmblöcken */
             border-color: var(--accent-yellow);
         }
 
@@ -530,7 +523,6 @@
             margin-right: 15px;
             font-size: 1.4rem;
             background-color: #eef4fb;
-            /* Sehr helles Blau */
             color: var(--primary-blue);
             transition: all 0.3s ease;
             flex-shrink: 0;
@@ -555,11 +547,9 @@
             line-height: 1.6;
         }
 
-        /* Rechte Seite: Video */
         .about-video-column {
             position: sticky;
             top: 100px;
-            /* Video bleibt beim Scrollen kurz stehen */
         }
 
         .video-wrapper {
@@ -568,7 +558,6 @@
             border-radius: 20px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
             transform: rotate(0deg);
-            /* WICHTIG: 0deg statt 1deg */
             transition: transform 0.4s ease;
         }
 
@@ -583,6 +572,11 @@
             border-radius: 15px;
             overflow: hidden;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
 
         @media (max-width: 1000px) {
@@ -607,9 +601,11 @@
             }
         }
 
-        /* Intro Text */
+        /* --- VORSTAND --- */
+        /* Padding durch globale Regel geregelt */
+        
         .board-container {
-            max-width: 1100px;
+            max-width: var(--container-width); /* Synchronisiert */
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -617,7 +613,6 @@
             margin-bottom: 100px;
         }
 
-        /* Intro Text */
         .board-intro {
             text-align: center;
             max-width: 800px;
@@ -630,35 +625,28 @@
             line-height: 1.8;
         }
 
-        /* Die Profil-Karte */
         .profile-row {
             display: flex;
             align-items: stretch;
-            /* Damit beide Seiten gleich hoch sind */
             background: white;
             border-radius: 20px;
             overflow: hidden;
-            /* Damit das Bild an den Ecken rund bleibt */
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
             transition: all 0.5s ease;
             min-height: 400px;
         }
 
-        /* Hover Effekt für die ganze Karte */
         .profile-row:hover {
             transform: translateY(-5px);
             box-shadow: 0 25px 50px rgba(0, 45, 90, 0.15);
         }
 
-        /* Abwechselndes Layout (Zig-Zag) */
         .profile-row:nth-child(even) {
             flex-direction: row-reverse;
         }
 
-        /* Das Bild */
         .profile-image-col {
             flex: 0 0 40%;
-            /* Nimmt 40% der Breite ein */
             position: relative;
             overflow: hidden;
         }
@@ -670,12 +658,10 @@
             transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        /* Zoom Effekt beim Hover */
         .profile-row:hover .profile-image-col img {
             transform: scale(1.05);
         }
 
-        /* Overlay über dem Bild (optional für Style) */
         .profile-image-col::after {
             content: '';
             position: absolute;
@@ -686,7 +672,6 @@
             background: linear-gradient(to bottom, transparent 80%, rgba(0, 45, 90, 0.4) 100%);
         }
 
-        /* Der Textbereich */
         .profile-content-col {
             flex: 1;
             padding: 50px;
@@ -696,7 +681,6 @@
             position: relative;
         }
 
-        /* Kleiner gelber Balken an der Seite */
         .profile-row:nth-child(odd) .profile-content-col {
             border-left: 5px solid var(--accent-yellow);
         }
@@ -737,7 +721,6 @@
             margin-bottom: 25px;
         }
 
-        /* Zitat Box */
         .profile-quote {
             background: #f9fbfd;
             padding: 20px;
@@ -747,7 +730,6 @@
             font-weight: 500;
             position: relative;
             margin-top: auto;
-            /* Drückt es nach unten */
         }
 
         .profile-quote i {
@@ -758,7 +740,6 @@
             font-size: 1.5rem;
         }
 
-        /* Mobile Anpassung */
         @media (max-width: 900px) {
 
             .profile-row,
@@ -775,18 +756,37 @@
             .profile-content-col {
                 padding: 30px;
                 border: none !important;
-                /* Entfernt die seitlichen Balken mobil */
                 border-top: 5px solid var(--accent-yellow) !important;
             }
         }
 
-        .contact-detail-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+        /* --- KONTAKT --- */
+        /* Padding durch globale Regel geregelt */
+        #kontakt {
+            background: linear-gradient(135deg, #002D5A 0%, #001B36 100%);
+            position: relative; 
+            overflow: hidden;
         }
 
-        /* Intro Text */
+        #contactCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .contact-detail-container {
+            max-width: var(--container-width); /* Synchronisiert */
+            margin: 0 auto;
+            /* Padding links/rechts durch nav/section standard geregelt, hier optional entfernen oder anpassen */
+            /* padding: 0 20px;  <-- Entfernt, da Section-Padding dies übernimmt */
+            position: relative;
+            z-index: 2;
+        }
+
         .contact-intro {
             text-align: center;
             max-width: 800px;
@@ -803,7 +803,6 @@
             line-height: 1.8;
         }
 
-        /* 3-Schritte Prozess */
         .process-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -811,23 +810,19 @@
             margin-bottom: 100px;
         }
 
-        /* --- BASIS-ZUSTAND --- */
         .process-step {
             background: white;
             padding: 40px 30px;
             border-radius: 20px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            /* Hier: Ein transparenter Rahmen als Platzhalter verhindert "Springen" */
             border: 2px solid transparent; 
             transition: all 0.4s ease;
             position: relative;
         }
 
-        /* --- HOVER-ZUSTAND --- */
         .process-step:hover {
             transform: translateY(-10px);
-            /* Hier: Der Rahmen wird beim Hovern gelb */
             border-color: var(--accent-yellow);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
@@ -857,7 +852,6 @@
             font-size: 0.95rem;
         }
 
-        /* Hauptbereich */
         .membership-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -878,7 +872,6 @@
             line-height: 1.7;
         }
 
-        /* LISTE: Exakt gleicher Stil wie in der Programm-Abteilung */
         .benefit-list {
             list-style: none;
             padding: 0;
@@ -888,30 +881,22 @@
         .benefit-list li {
             position: relative;
             padding-left: 30px;
-            /* Abstand wie im Programm */
             margin-bottom: 20px;
-            /* Etwas mehr Abstand für Kontaktseite */
             font-size: 1.05rem;
             color: white;
-            /* Schrift Weiß */
             font-weight: 500;
         }
 
-        /* Das Häkchen als Pseudo-Element (wie im Programm) */
         .benefit-list li::before {
             content: '\f00c';
-            /* FontAwesome Check Icon */
             font-family: 'Font Awesome 5 Free';
             font-weight: 900;
             position: absolute;
             left: 0;
             top: 2px;
             color: var(--accent-yellow);
-            /* Einfaches Gelb */
-            /* KEIN Hintergrund, KEIN Glow, KEIN Shadow */
         }
 
-        /* Formular Styling */
         .styled-form-card {
             background: white;
             padding: 50px;
@@ -967,33 +952,35 @@
             background: #e0a800;
         }
 
-        @media (max-width: 900px) {
-            .process-row {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .membership-grid {
-                grid-template-columns: 1fr;
-                gap: 50px;
-            }
-
-            .styled-form-card {
-                padding: 30px;
-            }
+        /* --- FORMULAR STATUS MELDUNGEN --- */
+        #form-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: none; /* Standardmäßig unsichtbar */
+            text-align: center;
+            animation: fadeIn 0.5s ease;
         }
 
-        .video-box {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
+        #form-status.success {
+            display: block;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        #form-status.error {
+            display: block;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .submit-btn.loading {
+            opacity: 0.7;
+            cursor: wait;
+            pointer-events: none;
         }
 
         .pdf-download-area {
@@ -1015,43 +1002,35 @@
             transform: translateY(0);
         }
 
-        @media (max-width: 1300px) {
-            .vorstand-row {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 40px;
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @media (max-width: 1000px) {
-            .about-container {
+        /* --- MOBILE GENERAL --- */
+        @media (max-width: 900px) {
+            .process-row {
                 grid-template-columns: 1fr;
-                text-align: center;
+                gap: 20px;
             }
 
-            .program-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .vorstand-row {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .ideology-grid {
-                text-align: left;
-            }
-
-            .contact-wrapper {
+            .membership-grid {
                 grid-template-columns: 1fr;
-                text-align: center;
+                gap: 50px;
+            }
+
+            .styled-form-card {
+                padding: 30px;
             }
         }
 
         @media (max-width: 700px) {
-            .program-grid {
-                grid-template-columns: 1fr;
+            /* Synchronisierter Abstand auf Mobilgeräten */
+            section {
+                padding: 60px 5%;
             }
 
-            .vorstand-row {
+            .program-grid, .vorstand-row, .ideology-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -1068,11 +1047,6 @@
                 margin-left: 0;
             }
 
-            .lang-container {
-                margin-left: 0;
-                margin-top: 10px;
-            }
-
             .logo-img {
                 height: 60px;
                 margin-left: 0;
@@ -1082,67 +1056,6 @@
                 font-size: 1.2rem;
             }
         }
-        /* Fügen Sie das zu Ihrem CSS hinzu */
-
-            /* Wichtig: Position relative für den Container, damit das Canvas absolut darin liegt */
-            #kontakt {
-                position: relative; 
-                overflow: hidden;
-            }
-
-            /* Das Canvas liegt über dem Hintergrund, aber unter dem Text */
-            #contactCanvas {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                z-index: 1; /* Ebene 1 */
-                pointer-events: none; /* Klicks gehen durch das Canvas durch zum Formular */
-            }
-
-            /* Der Inhalt muss über dem Canvas liegen */
-            .contact-detail-container {
-                position: relative;
-                z-index: 2; /* Ebene 2 (höher als Canvas) */
-            }
-
-            /* --- FORMULAR STATUS MELDUNGEN --- */
-            #form-status {
-                margin-top: 20px;
-                padding: 15px;
-                border-radius: 8px;
-                font-weight: 600;
-                display: none; /* Standardmäßig unsichtbar */
-                text-align: center;
-                animation: fadeIn 0.5s ease;
-            }
-
-            #form-status.success {
-                display: block;
-                background-color: #d4edda;
-                color: #155724;
-                border: 1px solid #c3e6cb;
-            }
-
-            #form-status.error {
-                display: block;
-                background-color: #f8d7da;
-                color: #721c24;
-                border: 1px solid #f5c6cb;
-            }
-
-            /* Lade-Animation für den Button */
-            .submit-btn.loading {
-                opacity: 0.7;
-                cursor: wait;
-                pointer-events: none; /* Klicks verhindern */
-            }
-
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
     </style>
 </head>
 
@@ -1289,7 +1202,7 @@
         </div>
     </section>
 
-    <section id="programm" style="padding-top: 80px; background-color: #f4f7f9;">
+    <section id="programm">
 
         <div style="text-align: center; max-width: 800px; margin: 0 auto 60px auto;" class="reveal">
             <h2 class="section-title" data-i18n="program_title">Unser Programm</h2>
@@ -1466,7 +1379,7 @@
 
     </section>
 
-    <section id="vorstand" style="padding: 100px 5%; background-color: white;">
+    <section id="vorstand" style="background-color: white;">
 
         <div class="board-intro reveal">
             <h2 class="section-title" data-i18n="board_title">Unser Vorstand</h2>
@@ -1583,11 +1496,11 @@
         </div>
     </section>
 
-<section id="kontakt" style="padding-top: 80px; padding-bottom: 100px; background: linear-gradient(135deg, #002D5A 0%, #001B36 100%); position: relative; overflow: hidden;">
+<section id="kontakt">
 
-    <canvas id="contactCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;"></canvas>
+    <canvas id="contactCanvas"></canvas>
 
-    <div class="contact-detail-container" style="position: relative; z-index: 2;">
+    <div class="contact-detail-container">
         
         <div class="contact-intro reveal">
             <h2 class="section-title" data-i18n="contact_title">Jetzt Mitmachen</h2>
@@ -2099,7 +2012,11 @@
                 // PRIVACY & MISC
                 privacy_notice: "Ihre Daten werden vertraulich behandelt und nur für den Aufnahmeprozess verwendet.",
                 video_error: "Dein Browser unterstützt dieses Video nicht.",
-                company_name: "Berliner Wendepunkt"
+                company_name: "Berliner Wendepunkt",
+                
+                // MESSAGES
+                msg_success: "Vielen Dank für Ihr Interesse am Berliner Wendepunkt (BWP)! Ihr Antrag ist erfolgreich eingegangen. Wir melden uns in Kürze persönlich bei Ihnen.",
+                msg_error: "Es gab ein Problem beim Senden. Bitte versuchen Sie es später erneut oder schreiben Sie uns eine E-Mail."
             },
             en: {
                 nav_home: "Home", nav_program: "Program", nav_about: "About Us", nav_board: "Board", nav_membership: "Membership", btn_lang: "Language",
@@ -2229,7 +2146,11 @@
                 // PRIVACY & MISC
                 privacy_notice: "Your data is treated confidentially and used only for the membership process.",
                 video_error: "Your browser does not support this video.",
-                company_name: "Berliner Wendepunkt"
+                company_name: "Berliner Wendepunkt",
+
+                // MESSAGES
+                msg_success: "Thank you for your interest in Berliner Wendepunkt (BWP)! Your application has been received successfully. We will be in touch shortly.",
+                msg_error: "There was a problem sending your message. Please try again later or email us directly."
             },
 
             tr: {
@@ -2360,7 +2281,11 @@
                 // PRIVACY & MISC
                 privacy_notice: "Verileriniz gizli olarak ele alınır ve yalnızca üyelik süreci için kullanılır.",
                 video_error: "Tarayıcınız bu videoyu desteklemiyor.",
-                company_name: "Berliner Wendepunkt"
+                company_name: "Berliner Wendepunkt",
+
+                // MESSAGES
+                msg_success: "Berliner Wendepunkt'a (BWP) gösterdiğiniz ilgi için teşekkür ederiz! Başvurunuz başarıyla alındı. Yakında sizinle iletişime geçeceğiz.",
+                msg_error: "Mesaj gönderilirken bir sorun oluştu. Lütfen daha sonra tekrar deneyin veya bize e-posta gönderin."
             },
 
             ru: {
@@ -2486,7 +2411,11 @@
                 // PRIVACY & MISC
                 privacy_notice: "Ваши данные обрабатываются конфиденциально и используются только для процесса членства.",
                 video_error: "Ваш браузер не поддерживает это видео.",
-                company_name: "Berliner Wendepunkt"
+                company_name: "Berliner Wendepunkt",
+
+                // MESSAGES
+                msg_success: "Спасибо за ваш интерес к Berliner Wendepunkt (BWP)! Ваша заявка успешно принята. Мы свяжемся с вами в ближайшее время.",
+                msg_error: "Произошла ошибка при отправке. Пожалуйста, попробуйте позже или напишите нам на email."
             },
 
             uk: {
@@ -2612,7 +2541,11 @@
                 // PRIVACY & MISC
                 privacy_notice: "Ваші дані обробляються конфіденційно та використовуються лише для процесу членства.",
                 video_error: "Ваш браузер не підтримує це відео.",
-                company_name: "Berliner Wendepunkt"
+                company_name: "Berliner Wendepunkt",
+
+                // MESSAGES
+                msg_success: "Дякуємо за ваш інтерес до Berliner Wendepunkt (BWP)! Ваша заявка успішно прийнята. Ми зв'яжемося з вами найближчим часом.",
+                msg_error: "Виникла помилка при відправці. Будь ласка, спробуйте пізніше або напишіть нам на email."
             },
 
             pl: {
@@ -2738,7 +2671,11 @@
                 // PRIVACY & MISC
                 privacy_notice: "Twoje dane są traktowane poufnie i używane tylko do procesu członkowskiego.",
                 video_error: "Twoja przeglądarka nie obsługuje tego wideo.",
-                company_name: "Berliner Wendepunkt"
+                company_name: "Berliner Wendepunkt",
+
+                // MESSAGES
+                msg_success: "Dziękujemy za zainteresowanie Berliner Wendepunkt (BWP)! Twój wniosek został pomyślnie przyjęty. Wkrótce się z Tobą skontaktujemy.",
+                msg_error: "Wystąpił problem z wysłaniem wiadomości. Spróbuj ponownie później lub wyślij nam e-mail."
             }
         };
 
@@ -2776,62 +2713,6 @@
             // Close menu
             langMenu.classList.remove("show");
         };
-
-        /* --- AJAX CONTACT FORM LOGIC --- */
-    const form = document.getElementById("ajax-contact-form");
-    const statusDiv = document.getElementById("form-status");
-    const submitBtn = document.getElementById("submit-btn");
-
-    if(form) {
-        async function handleSubmit(event) {
-            event.preventDefault(); // Verhindert das Neuladen der Seite
-            
-            // UI Feedback: Button deaktivieren & Text ändern
-            const originalBtnText = submitBtn.innerText;
-            submitBtn.innerText = "Sende..."; // Oder Lade-Icon
-            submitBtn.classList.add('loading');
-            statusDiv.className = ''; // Reset Klassen
-            statusDiv.style.display = 'none';
-
-            const data = new FormData(event.target);
-
-            fetch(event.target.action, {
-                method: form.method,
-                body: data,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            }).then(response => {
-                submitBtn.classList.remove('loading');
-                submitBtn.innerText = originalBtnText; // Text zurücksetzen
-
-                if (response.ok) {
-                    // ERFOLG
-                    statusDiv.innerHTML = translations[currentLang].msg_success || "Vielen Dank!";
-                    statusDiv.classList.add('success');
-                    form.reset(); // Formular leeren
-                } else {
-                    // FEHLER VOM SERVER
-                    response.json().then(data => {
-                        if (Object.hasOwn(data, 'errors')) {
-                            statusDiv.innerHTML = data["errors"].map(error => error["message"]).join(", ");
-                        } else {
-                            statusDiv.innerHTML = translations[currentLang].msg_error || "Fehler beim Senden.";
-                        }
-                        statusDiv.classList.add('error');
-                    });
-                }
-            }).catch(error => {
-                // NETZWERKFEHLER
-                submitBtn.classList.remove('loading');
-                submitBtn.innerText = originalBtnText;
-                
-                statusDiv.innerHTML = translations[currentLang].msg_error || "Netzwerkfehler.";
-                statusDiv.classList.add('error');
-            });
-        }
-        form.addEventListener("submit", handleSubmit);
-    }
         
     </script>
 </body>
